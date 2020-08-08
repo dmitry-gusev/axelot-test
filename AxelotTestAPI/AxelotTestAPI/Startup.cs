@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using AxelotTestAPI.Domain;
+using AxelotTestAPI.Domain.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -25,17 +29,19 @@ namespace AxelotTestAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDistributedMemoryCache();
-
-            services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromSeconds(10);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
-            });
-            services.AddControllers();
-            services.AddSwaggerGen();
             
+            services.AddControllers();
+            services.AddSwaggerGen(c=> {
+                c.IgnoreObsoleteProperties();
+
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+                c.EnableAnnotations();
+            });
+
+            services.AddSingleton<IMemoryService, MemoryService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,28 +51,27 @@ namespace AxelotTestAPI
             {
                 app.UseDeveloperExceptionPage();
             }
-            
-            app.UseHttpsRedirection();
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
+
+
+
             app.UseSwagger();
 
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
+
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                c.RoutePrefix = string.Empty;
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Axios API");
+                
             });
+
+
             app.UseRouting();
-
-            app.UseAuthorization();
-
-            app.UseSession();
-
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
+            
         }
     }
 }

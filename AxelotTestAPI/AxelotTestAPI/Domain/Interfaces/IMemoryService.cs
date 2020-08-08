@@ -1,4 +1,5 @@
-﻿using AxelotTestAPI.Models;
+﻿using AxelotTestAPI.Domain.Enums;
+using AxelotTestAPI.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,18 +13,35 @@ namespace AxelotTestAPI.Domain.Interfaces
     public interface IMemoryService
     {
         /// <summary>
-        /// Информация о потреблении памяти процессом или процессами
+        /// Информация о потреблении памяти процессом
         /// </summary>
         /// <param name="memScale">Еденица измерения</param>
-        /// <param name="processName">Название процесса, если процесс не указан, возвращает информацию по всем процессам</param>
-        /// <param name="sessionKey">Ключ сессии</param>
+        /// <param name="processName">Название процесса</param>
         /// <remarks>
         /// 
         /// </remarks>
-        /// <returns>Список данных по найденным процессам, если указано имя не существующего процесса,
-        /// возвращает ошибку - ProcessNotFoundException
+        /// <returns>Данные по указанному процессу, если процесс не найден, возвращает ошибку
         /// </returns>
-        Task<AppRamResult> GetRam(string memScale, string sessionKey, string processName="");
+        Task<AppRamDataResult> GetRam(MemoryScale memScale, string processName);
 
+        
+        /// <summary>
+        /// Установка периода обновления данных о процессах
+        /// </summary>
+        /// <param name="period">Новый интервал обновления</param>
+        /// <returns></returns>
+        Task SetPeriod(int period);
+
+        /// <summary>
+        /// Возвращает текущее значение периода обновления
+        /// </summary>
+        /// <returns>Число</returns>
+        Task<int> GetCurrentPeriod();
+
+        /// <summary>
+        /// Список всех процессов сервера
+        /// </summary>
+        /// <returns>Список</returns>
+        Task<List<string>> GetAllProcesses();
     }
 }

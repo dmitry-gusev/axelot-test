@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using AxelotTestAPI.Attributes;
+using AxelotTestAPI.Domain.Enums;
 using AxelotTestAPI.Domain.Interfaces;
 using AxelotTestAPI.Extentions;
 using AxelotTestAPI.Interfaces.Abstracts;
@@ -14,11 +15,12 @@ using Microsoft.Extensions.Logging;
 
 namespace AxelotTestAPI.Controllers
 {
-    [Route("[controller]")]
+    /// <summary>
+    /// Основной контроллер
+    /// </summary>
+    [Route("")]
     [ApiController]
-    //Проверяет ключ сессии, если его нет, устанавливает
-    //и обновляет время последнего запроса к серверу
-    [SessionsAtribute]
+    [Produces("application/json")]
     public class HomeController : AppBaseController
     {
         /// <summary>
@@ -31,6 +33,11 @@ namespace AxelotTestAPI.Controllers
         /// </summary>
         IMemoryService _memoryService;
 
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="logger">Логгер</param>
+        /// <param name="memoryService">Сервис наблюдения за процессами</param>
         public HomeController(ILogger<HomeController> logger, IMemoryService memoryService)
         {
             _logger = logger;
@@ -38,20 +45,119 @@ namespace AxelotTestAPI.Controllers
         }
 
         /// <summary>
-        /// Информация о потребляемой памяти процессом сервера
+        /// RAM
         /// </summary>
+        /// <remarks>
+        /// Информация о потребляемой памяти процессом сервера
+        /// memScale может принимать значения: Мб, Гб
+        /// Указывается без учета регистра
+        /// </remarks>
         /// <param name="memScale">Единицы измерения: Мб и Гб</param>
-        /// <param name="processName">Название процесса, если не указано, информация запрашивается оп всем процессам</param>
+        /// <param name="processName">Название процесса</param>
         /// <returns>Результат в виде </returns>
-        [HttpGet]
-        public async Task<JsonResult> RAM(string memScale, string processName = "")
+        [HttpGet("ram")]
+        [ProducesResponseType(typeof(AppRamResult),200)]
+        public async Task<IActionResult> GetRam([Required] string memScale, [Required] string processName )
         {
-            //Ключ сессии
-            string key = HttpContext.Session.Get<string>("Key");
-            return new JsonResult(new AppRamResult() { });
+            try
+            {
+                //Еденица измерения памяти, если параметр не корректный, вызовет ошибку
+                //Сравнение без учета регистра
+                var _memScale = memScale.ToUpper() switch
+                {
+                    "МБ" => MemoryScale.Mb,
+                    "ГБ" => MemoryScale.Gb,
+                    _ => throw new Exception("Еденица измерения памяти указана не верно, доступно два варианта: Мб или Гб")
+                };
+                var result =await _memoryService.GetRam(_memScale, processName);
+                return new JsonResult(new AppRamResult() { Success = true, Data = result });
+
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(new JsonResult(new AppRamResult() { Success = false, Data = null, Error = $"{e.Message} {e.InnerException?.Message}" }));
+            }
+
 
         }
 
-        
+        /// <summary>
+        /// SET PERIOD
+        /// </summary>
+        /// <remarks>
+        /// Установка периода обновления данных
+        /// </remarks>
+        /// <param name="period">Параметры периода обновления информации о процессах</param>
+        /// <returns></returns>
+        [HttpPut("set-period")]
+        [ProducesResponseType(typeof(AppRamStringResult), 200)]
+        public async Task<IActionResult> SetPeriod([Required] int period)
+        {
+            try
+            {
+
+                await _memoryService.SetPeriod(period);
+                return new JsonResult(new AppRamStringResult() { Success = true, Data = null });
+
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(new JsonResult(new AppRamStringResult() { Success = false, Data = null, Error = $"{e.Message} {e.InnerException?.Message}" }));
+            }
+
+
+        }
+
+        /// <summary>
+        /// CURRENT PERIOD
+        /// </summary>
+        /// <remarks>
+        /// Показывает значение интервала обновления
+        /// </remarks>
+        /// <returns></returns>
+        [HttpGet("current-period")]
+        [ProducesResponseType(typeof(AppRamIntResult), 200)]
+        public async Task<IActionResult> GetPeriod()
+        {
+            try
+            {
+                var result = await _memoryService.GetCurrentPeriod();
+                return new JsonResult(new AppRamIntResult() { Success = true, Data = result });
+
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(new JsonResult(new AppRamIntResult() { Success = false, Data = 0, Error = $"{e.Message} {e.InnerException?.Message}" }));
+            }
+
+
+        }
+
+        /// <summary>
+        /// ALL PROCESSES
+        /// </summary>
+        /// <remarks>
+        /// Все процессы сервера
+        /// </remarks>
+        /// <returns></returns>
+        [HttpGet("all-processes")]
+        [ProducesResponseType(typeof(AppRamStringListResult), 200)]
+        public async Task<IActionResult> GetProcesses()
+        {
+            try
+            {
+                var result = await _memoryService.GetAllProcesses();
+                return new JsonResult(new AppRamStringListResult() { Success = true, Data = result });
+
+            }
+            catch (Exception e)
+            {
+                return await Task.FromResult(new JsonResult(new AppRamStringListResult() { Success = false, Error = $"{e.Message} {e.InnerException?.Message}" }));
+            }
+
+
+        }
+
+
     }
 }

@@ -8,12 +8,12 @@ namespace AxelotTestAPI.Models
     /// <summary>
     /// Ответ на запрос API RAM
     /// </summary>
-    public class AppRamResult : AppWebApiResultBase<IEnumerable<AppRamDataResult>>
+    public class AppRamResult : AppWebApiResultBase<AppRamDataResult>
     {
         /// <summary>
         /// Список данных по запрошенным процессам
         /// </summary>
-        public override IEnumerable<AppRamDataResult> Data { get; set; }
+        public override AppRamDataResult Data { get; set; }
     }
 
     /// <summary>
