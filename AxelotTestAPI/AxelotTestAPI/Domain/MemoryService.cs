@@ -63,7 +63,7 @@ namespace AxelotTestAPI.Domain
         /// Удаление данных о приложениях, которые не запрашивали более 1 минуты
         /// </summary>
         /// <returns></returns>
-        Task DeleteDroppedWatchers()
+        async Task DeleteDroppedWatchers()
         {
             //Пока не отменится работа, вечный цикл
             while (!_internalToken.Token.IsCancellationRequested)
@@ -79,9 +79,8 @@ namespace AxelotTestAPI.Domain
                 });
 
                 //Пауза перед следующим циклом блокируем поток
-               Task.Delay(30*1000, _internalToken.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+               await Task.Delay(30*1000, _internalToken.Token).ConfigureAwait(false);
             }
-            return Task.CompletedTask;
         }
 
 
@@ -115,19 +114,19 @@ namespace AxelotTestAPI.Domain
         /// Основная задача обновления данных
         /// </summary>
         /// <returns></returns>
-        Task ApplicationDataUpdate()
+        async Task ApplicationDataUpdate()
         {
             while (!_internalToken.Token.IsCancellationRequested)
             {
                 var tasks = _db.Select(d => Task.Factory.StartNew(async () =>
                 {
                     d.Value.Update(await GetCurrentProcessMemory(d.Value.ProcessName));
-                }).Unwrap());
-                Task.WaitAll(tasks.ToArray());
+                }));
+                await Task.WhenAll(tasks.ToArray());
 
-                Task.Delay(_periodUpdate*1000, _internalToken.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+                await Task.Delay(_periodUpdate*1000, _internalToken.Token).ConfigureAwait(false);
             }
-            return Task.CompletedTask;
+            
         }
 
 
