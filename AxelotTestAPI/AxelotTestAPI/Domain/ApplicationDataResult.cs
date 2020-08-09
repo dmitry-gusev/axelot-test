@@ -1,7 +1,10 @@
 ﻿using AxelotTestAPI.Domain.Enums;
+using AxelotTestAPI.Extentions;
+using AxelotTestAPI.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace AxelotTestAPI.Domain
@@ -57,10 +60,29 @@ namespace AxelotTestAPI.Domain
             _ => ""
         };
 
+        /// <summary>
+        /// Обновление данных о памяти
+        /// </summary>
+        /// <param name="source">Инстанс с новыми значениями</param>
         internal void Update(ApplicationDataResult source)
         {
             this.ValueTime = source.ValueTime;
             this.Value = source.Value;
+        }
+
+        /// <summary>
+        /// Преобразование типов
+        /// из текущего в результат данных API оперции
+        /// </summary>
+        /// <param name="source">Источник данных</param>
+        public static implicit operator AppRamDataResult(ApplicationDataResult source)
+        {
+            return new AppRamDataResult() {
+                ProcessName = source.ProcessName,
+                ProcTime = source.ValueTime,
+                Scale = source.MemorySc.GetDescription(),
+                Value = $"{source.ValueToStringResult():f2}" 
+            };
         }
     }
 }

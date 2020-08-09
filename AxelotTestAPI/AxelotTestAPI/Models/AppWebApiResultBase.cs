@@ -21,7 +21,7 @@ namespace AxelotTestAPI.Models
         public string Error { get; set; }
 
        /// <summary>
-       /// Полезная нагрузка ответа
+       /// Полезная нагрузка ответа, может принимать занчение null
        /// </summary>
         public abstract T Data { get; set; }
 

@@ -17,11 +17,16 @@ namespace AxelotTestAPI.Domain.Exceptions.Tests
         two=1
     }
 
+    /// <summary>
+    /// Тестирование расширения
+    /// </summary>
     [TestClass()]
     public class EnumFriendlyNamesTests
     {
 
-
+        /// <summary>
+        /// Проверка корректности преобразования Enum от арибута Description
+        /// </summary>
         [TestMethod()]
         public void GetDescriptionTest()
         {

@@ -8,8 +8,14 @@ namespace AxelotTestAPI.Models
     /// <summary>
     /// Результат выполнения операции
     /// </summary>
+    /// <remarks>
+    /// Для операций возвращающих список строк
+    /// </remarks>
     public class AppRamStringListResult : AppWebApiResultBase<List<string>>
     {
+        /// <summary>
+        /// Непосредственно результат оперции, список строк
+        /// </summary>
         public override List<string> Data { get; set; }
     }
 }

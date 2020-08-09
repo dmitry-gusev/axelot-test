@@ -31,8 +31,7 @@ namespace AxelotTestAPI.Domain
 
         //Логер
         ILogger<MemoryService> _logger;
-        //Сервис провайдер
-        IServiceProvider _serviceProvider;
+        
 
         /// <summary>
         /// Внутренний токен отмены процессов
@@ -48,11 +47,9 @@ namespace AxelotTestAPI.Domain
         /// Сервис контейнер, содержит в себе все активные процессы, управляет жизненным циклом
         /// </summary>
         /// <param name="logger">Логер</param>
-        /// <param name="serviceProvider">Сервис провайдер</param>
-        public MemoryService(ILogger<MemoryService> logger, IServiceProvider serviceProvider)
+        public MemoryService(ILogger<MemoryService> logger)
         {
             _logger = logger;
-            _serviceProvider = serviceProvider;
 
 
 
@@ -140,7 +137,7 @@ namespace AxelotTestAPI.Domain
             var app = await GetCurrentProcessMemory(processName);
             app.MemorySc = memScale;
             app.LastDataGave = DateTime.Now;
-            while (_internalToken.Token.IsCancellationRequested || !_db.TryAdd(processName, app))
+            while (!_internalToken.Token.IsCancellationRequested && !_db.TryAdd(processName, app))
             {
                 await Task.Delay(100).ConfigureAwait(false);
             }
@@ -241,6 +238,8 @@ namespace AxelotTestAPI.Domain
             await Task.CompletedTask;
         }
 
+        
+
         /// <summary>
         /// Остановка сервиса
         /// </summary>
@@ -249,7 +248,17 @@ namespace AxelotTestAPI.Domain
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Сервис сбора RAM о приложениях остановлен");
+            await Task.CompletedTask;
+        }
 
+        /// <summary>
+        /// Список всех процессов, за которыми наблюдает менеджер
+        /// </summary>
+        /// <returns>Список данных</returns>
+        public async Task<List<AppRamDataResult>> GetWatchedProcesses()
+        {
+            var lst = _db.Select(x => (AppRamDataResult)x.Value).ToList();
+            return await Task.FromResult(lst);
         }
     }
 }

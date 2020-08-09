@@ -11,13 +11,13 @@ namespace AxelotTestAPI.Models
     public class AppRamResult : AppWebApiResultBase<AppRamDataResult>
     {
         /// <summary>
-        /// Список данных по запрошенным процессам
+        /// Данные по запрошенному приложению (процессу)
         /// </summary>
         public override AppRamDataResult Data { get; set; }
     }
 
     /// <summary>
-    /// Данные по процессу
+    /// Данные по приложению (процессу)
     /// </summary>
     public class AppRamDataResult
     {
@@ -32,12 +32,12 @@ namespace AxelotTestAPI.Models
         public string ProcessName { get; set; }
 
         /// <summary>
-        /// Значение потребления памяти в установленных еденицах
+        /// Значение потребления памяти в выбранно еденице измерения
         /// </summary>
         public string Value { get; set; }
 
         /// <summary>
-        /// Еденица изменерения
+        /// Еденица изменерения памяти (Мб, Гб)
         /// </summary>
         public string Scale { get; set; }
 

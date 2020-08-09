@@ -9,13 +9,17 @@ using System.Threading.Tasks;
 
 namespace AxelotTestAPI.Extentions
 {
+    /// <summary>
+    /// Расширение для сервиса сбора данных о памяти приложений (процессов)
+    /// </summary>
     public static class RamWatcherExtention
     {
         public static IHostBuilder AddRamWatcher(this IHostBuilder builder) =>
             builder.ConfigureServices((context, services) =>
             {
+                //Регистрация сервиса
                 services.AddSingleton<IMemoryService, MemoryService>();
-
+                //Запуск сервиса процессом
                 services.AddHostedService<IMemoryService>(sp=>sp.GetRequiredService<IMemoryService>());
             });
             

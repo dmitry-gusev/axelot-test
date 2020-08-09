@@ -44,5 +44,11 @@ namespace AxelotTestAPI.Domain.Interfaces
         /// </summary>
         /// <returns>Список</returns>
         Task<List<string>> GetAllProcesses();
+
+        /// <summary>
+        /// Список всех наблюдаемых приложений (процессов)
+        /// </summary>
+        /// <returns>Список наблюдаемых процессов, со всеми параметрами</returns>
+        Task<List<AppRamDataResult>> GetWatchedProcesses();
     }
 }
