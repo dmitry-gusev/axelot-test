@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace AxelotTestAPI.Domain
 {
     /// <inheritdoc cref="IMemoryService"/>
-    public class MemoryService : IMemoryService, IDisposable
+    public class MemoryService : IMemoryService
     {
         /// <summary>
         /// Контейнес с аблюдаемыми процессами
@@ -37,7 +37,7 @@ namespace AxelotTestAPI.Domain
         /// <summary>
         /// Внутренний токен отмены процессов
         /// </summary>
-        CancellationTokenSource _internalToken = new CancellationTokenSource();
+        CancellationTokenSource _internalToken;
 
         /// <summary>
         /// Текущая задача удаления не запрашиваемых приложений
@@ -54,8 +54,7 @@ namespace AxelotTestAPI.Domain
             _logger = logger;
             _serviceProvider = serviceProvider;
 
-            _currentDeleteTask =Task.Run( DeleteDroppedWatchers);
-            _currentActiveTask =Task.Run( ApplicationDataUpdate);
+
 
         }
 
@@ -79,7 +78,7 @@ namespace AxelotTestAPI.Domain
                 });
 
                 //Пауза перед следующим циклом блокируем поток
-               await Task.Delay(30*1000, _internalToken.Token).ConfigureAwait(false);
+                await Task.Delay(30 * 1000, _internalToken.Token).ConfigureAwait(false);
             }
         }
 
@@ -124,9 +123,9 @@ namespace AxelotTestAPI.Domain
                 }));
                 await Task.WhenAll(tasks.ToArray());
 
-                await Task.Delay(_periodUpdate*1000, _internalToken.Token).ConfigureAwait(false);
+                await Task.Delay(_periodUpdate * 1000, _internalToken.Token).ConfigureAwait(false);
             }
-            
+
         }
 
 
@@ -221,6 +220,36 @@ namespace AxelotTestAPI.Domain
         public async Task<List<string>> GetAllProcesses()
         {
             return await Task.FromResult(Process.GetProcesses().Select(x => x.ProcessName).ToList());
+        }
+
+        /// <summary>
+        /// Старт сервиса
+        /// </summary>
+        /// <param name="cancellationToken">Токен отмены</param>
+        /// <returns></returns>
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Сервис сбора RAM о приложениях запускается ...");
+            //Связываем внутренний токен отмены с внешним
+            _internalToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            //Стартуем задачи
+            //Удаления устаревших
+            _currentDeleteTask = Task.Run(DeleteDroppedWatchers);
+            //Сбор RAM приложений по интервалу
+            _currentActiveTask = Task.Run(ApplicationDataUpdate);
+            _logger.LogInformation("Сервис сбора RAM о приложениях запущен");
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Остановка сервиса
+        /// </summary>
+        /// <param name="cancellationToken">Токен отмены</param>
+        /// <returns></returns>
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Сервис сбора RAM о приложениях остановлен");
+
         }
     }
 }

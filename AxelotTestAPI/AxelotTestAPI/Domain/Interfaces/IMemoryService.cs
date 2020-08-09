@@ -1,5 +1,6 @@
 ﻿using AxelotTestAPI.Domain.Enums;
 using AxelotTestAPI.Models;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace AxelotTestAPI.Domain.Interfaces
     /// <summary>
     /// Сервис поставщик данных для API
     /// </summary>
-    public interface IMemoryService
+    public interface IMemoryService: IHostedService,IDisposable
     {
         /// <summary>
         /// Информация о потреблении памяти процессом

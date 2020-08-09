@@ -41,7 +41,7 @@ namespace AxelotTestAPI
                 c.EnableAnnotations();
             });
 
-            services.AddSingleton<IMemoryService, MemoryService>();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
